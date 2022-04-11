@@ -77,6 +77,7 @@ void main()
         cout << "Произошла ошибка при открытии файла Input.txt";
     }
     else {
+        int word_amount = 0;
         ofstream output_file;
         output_file.open("Output.txt");
         if (input_file.fail()) {
@@ -85,16 +86,27 @@ void main()
         }
         else {
             while (getline(input_file, input_string)) {
+                bool check_word = true;
                 output_file << input_string << endl;
+                for (int i = 0; i < input_string.size(); i++) {             // Подсчёт кол-ва слов в строке
+                    if (check_word == false && input_string[i] == ' ')
+                        check_word = true;
+                    if (check_word == true && input_string[i] != ' ') {
+                        check_word = false;
+                        word_amount++;
+                    }
+                }
             }
             output_file.close();
 
             input_file.clear();
             input_file .seekg(0, input_file.beg);
-            cout << "Исходный текст: " << endl;
+            cout << "Введенный текст:" << endl;
             while (getline(input_file, input_string)) {
                 cout << input_string << endl;
             }
+            cout << "\nВариант 11: латиница, по кол-ву символов в слове, по убыванию, учитывать числа, быстрая сортировка" << endl;
+            cout << "Количество слов: " << word_amount++;
         }
     }
 
