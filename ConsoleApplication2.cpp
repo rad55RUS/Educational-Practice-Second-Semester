@@ -1,4 +1,6 @@
-﻿#include <iostream>
+﻿#define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
+
+#include <iostream>
 #include <sstream>
 #include <string>
 #include <ostream>
@@ -12,58 +14,12 @@
 #include <stdint.h>
 #include <ctime>
 #include <chrono>
+#include <filesystem>
+#include <experimental/filesystem>
 
-
+namespace fs = ::std::experimental::filesystem;
 using namespace std;
-bool check = false, isd = true;
-char number[256], * p = number;
 HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-
-// Проверка на число часть - 1
-bool isd_func()
-{
-    while (*p)
-        if (!isdigit(unsigned char(*p++)))
-        {
-            isd = false;
-            break;
-        }
-    if (abs(atof(number)) != (int)atof(number))
-        isd = true;
-    return isd;
-}
-
-// Проверка на число часть - 2
-int check_number(double num)
-{
-    while (check == false) // Проверка числа N
-    {
-        isd = true;
-        cout << "\nПожалуйста, введите число: ";
-        cin >> number;
-        p = number;
-        isd_func();
-        if (isd == true)
-            check = true;
-        num = atof(number);
-    }
-    return num;
-}
-
-// Ввод числа
-double enter_Number()
-{
-    cin >> number;
-    p = number;
-    isd_func();
-    if (isd == true)
-        check = true;
-    double num = atof(number);
-    check_number(num);
-    num = atof(number);
-    check = false;
-    return num;
-}
 
 // Проверка на подсчитываемые символы
 bool check_Counted_Symbols(char symbol)
@@ -79,14 +35,17 @@ bool check_Counted_Symbols(char symbol)
         return false;
 }
 
+// Быстрая сортировка
 vector<string> quick_Sort(vector<string> array_to_sort)
 {
     int array_to_sort_size = array_to_sort.size();
-    if (array_to_sort.size() > 1) {
+    if (array_to_sort_size > 1) {
         vector<string> first_part(0), second_part(0);
         int first_part_size = first_part.size();
         int second_part_size = second_part.size();
         int max_size = 0, min_size = 100000;
+
+        // Поиск опорного элемента
         for (int i = 0; i < array_to_sort_size; i++) {
             if (array_to_sort[i].size() > max_size)
                 max_size = array_to_sort[i].size();
@@ -94,6 +53,9 @@ vector<string> quick_Sort(vector<string> array_to_sort)
                 min_size = array_to_sort[i].size();
         }
         int mid_size = (max_size + min_size) / 2;
+        //
+
+        // Разделение массива
         for (int i = 0; i < array_to_sort_size; i++) {
             if (array_to_sort[i].size() > mid_size) {
                 first_part_size++;
@@ -105,12 +67,13 @@ vector<string> quick_Sort(vector<string> array_to_sort)
                 second_part.resize(second_part_size);
                 second_part[second_part_size-1] = array_to_sort[i];
             }
-            mid_size;
         }
-        if (first_part_size != 0 and second_part_size != 0) {
+        //
+
+        // Работа с рекурсией и составление готового массива
+        if (first_part_size != 0 && second_part_size != 0) {
             int j = 0;
             if (first_part_size > 1) {
-                first_part_size = first_part.size();
                 first_part = quick_Sort(first_part);
                 for (j = 0; j < first_part_size; j++) {
                     array_to_sort[j] = first_part[j];
@@ -121,7 +84,6 @@ vector<string> quick_Sort(vector<string> array_to_sort)
                 j++;
                 }
             if (second_part_size > 1) {
-                second_part_size = second_part.size();
                 second_part = quick_Sort(second_part);
                 int k = 0;
                 for (j; k < second_part_size; j++) {
@@ -136,6 +98,18 @@ vector<string> quick_Sort(vector<string> array_to_sort)
     return array_to_sort;
 }
 
+// Очистка от пустых элементов
+vector<string> clear_Empty_Elements(vector<string> array_to_clear, int& word_amount)
+{
+    for (int i = 0; i < array_to_clear.size(); i++) {
+        if (array_to_clear[i][0] == NULL) {
+            array_to_clear.erase(array_to_clear.begin() + i);
+            word_amount--;
+        }
+    }
+    return array_to_clear;
+}
+
 void main()
 {
     SetConsoleCP(1251); // Установка кодовой страницы win-cp 1251 в поток ввода
@@ -144,90 +118,134 @@ void main()
     ifstream input_file;
 
     string input_file_path;
-    cout << "Введите путь или название файла с расширением: ";
+    cout << "Введите полный путь или название файла с расширением: ";
     getline(cin, input_file_path);
     input_file.open(input_file_path);
-    vector<string> word_array(1);
-    string output_string;
     if (input_file.fail()) {
 
         cout << "\nПроизошла ошибка при открытии файла " << input_file_path;
     }
     else {
-        int word_amount = 0, word_length = 0, char_amount = 0, j = 0, t = 0;
-        ofstream output_file;
-        output_file.open("Output.txt");
-        ofstream result_file;
-        result_file.open("result.txt");
-        if (result_file.fail()) {
+        vector<string> word_array(1);
+        string output_string;
+        int word_amount = 0, word_length = 0, char_amount = 0, j = 0, t = 0, max_word_length = 0;
+        bool check_word = false;
+        fs::path file_path(input_file_path);
+        string file_name = file_path.stem().string();
+        string output_file_name = file_name + " - analysis.txt";
+        ofstream output_file(output_file_name);
+        vector<int> word_amount_by_length(max_word_length);
 
-            cout << "\nПроизошла ошибка при открытии файла result.txt";
-        }
-        else if (output_file.fail()) {
+        output_file << "Введенный текст: " << endl;
 
-            cout << "\nПроизошла ошибка при открытии файла Output.txt";
-        }
-        else {
-            output_file << "Введенный текст: " << endl;
-            while (getline(input_file, output_string)) {
-                bool check_word = false;
-                output_file << output_string << endl;
-                for (int i = 0; i < output_string.size(); i++) {             // Подсчёт кол-ва слов в строке
-                    if (check_word == false && !check_Counted_Symbols(output_string[i])) {
-                        check_word = true;
-                    }
-                    if (check_word == true && check_Counted_Symbols(output_string[i])) {
-                        check_word = false;
-                        word_array[word_amount].resize(word_length);
-                        word_amount++;
-                        word_array.resize(word_array.size()+1);
-                        word_length = 0;
-                    }
-                    if (check_word == false && check_Counted_Symbols(output_string[i])) {
-                        word_length++;
-                    }
-                    char_amount++;
+        // Составление массива слов
+        while (getline(input_file, output_string)) {
+            check_word = false;
+            for (int i = 0; i < output_string.size(); i++)
+                if (check_Counted_Symbols(output_string[i])) {
+                    check_word = true;
+                    break;
                 }
-                word_array[word_amount].resize(word_length);
-                check_word = false;
-                for (int i = 0; i < output_string.size(); i++) {
-                    if (check_Counted_Symbols(output_string[i])) {
-                        check_word = true;
-                        word_array[t][j] = output_string[i];
-                        j++;
-                    }
-                    else if (check_word == true) {
-                        j = 0;
-                        t++;
-                        check_word = false;
-                    }
+            if (output_string.size() > 0 && word_amount > 0 && check_word == true && check_Counted_Symbols(output_string[0])) {
+                word_amount++;
+                word_array.resize(word_array.size() + 1);
+            }
+            check_word = false;
+            output_file << output_string << endl;
+            for (int i = 0; i < output_string.size(); i++) {
+                if (check_word == false && !check_Counted_Symbols(output_string[i])) {
+                    check_word = true;
                 }
-                j = 0;
+                if (check_word == true && check_Counted_Symbols(output_string[i])) {
+                    check_word = false;
+                    word_array[word_amount].resize(word_length);
+                    word_amount++;
+                    word_array.resize(word_array.size() + 1);
+                    if (word_length > max_word_length) {
+                        max_word_length = word_length;
+                        word_amount_by_length.resize(max_word_length);
+                    }
+                    if (word_length > 0)
+                        word_amount_by_length[word_length - 1]++;
+                    word_length = 0;
+                }
+                if (check_word == false && check_Counted_Symbols(output_string[i])) {
+                    word_length++;
+                }
+                char_amount++;
             }
-            auto start_time = chrono::high_resolution_clock::now();                                                         // Время начала сортировки
-            word_array = quick_Sort(word_array);
-            auto end_time = chrono::high_resolution_clock::now();                                                           // Время завершения сортировки
-            auto search_time = chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();             // Время сортировки
-            input_file.clear();
-            input_file .seekg(0, input_file.beg);
-            cout << "\nВведенный текст:" << endl;
-            while (getline(input_file, output_string)) {
-                cout << output_string << endl;
+            if (output_string.size() > 0) {
+                if (word_length > max_word_length) {
+                    max_word_length = word_length;
+                    word_amount_by_length.resize(max_word_length);
+                }
+                if (word_length > 0) {
+                    word_amount_by_length[word_length - 1]++;
+                    word_array[word_amount].resize(word_length);
+                }
             }
-            output_file << "\nВариант 11: латиница, по кол-ву символов в слове, по убыванию, учитывать числа, быстрая сортировка" << endl;
-            output_file << "Количество слов: " << word_amount++ << endl;
-            output_file << "Время сортировки " << search_time << " миллисекунд" << endl;
-            cout << "\nВариант 11: латиница, по кол-ву символов в слове, по убыванию, учитывать числа, быстрая сортировка" << endl;
-            cout << "Количество слов: " << word_amount++ << endl;
-            cout << "Время сортировки " << search_time << " миллисекунд" << endl;
-            output_file.close();
-            result_file << "Отсортированный массив: " << endl;
-            for (int i = 0; i < word_array.size(); i++) {
-                result_file << '[' << i << ']' << " - " << word_array[i] << endl;
+            check_word = false;
+            for (int i = 0; i < output_string.size(); i++) {
+                if (check_Counted_Symbols(output_string[i])) {
+                    check_word = true;
+                    word_array[t][j] = output_string[i];
+                    j++;
+                }
+                else if (check_word == true) {
+                    word_array[t].resize(j);
+                    j = 0;
+                    t++;
+                    check_word = false;
+                }
             }
+            if (check_word == true)
+                t++;
+            j = 0;
+            word_length = 0;
         }
+        //
+
+        // Очистка от пустых элементов
+        word_array = clear_Empty_Elements(word_array, word_amount);
+        //
+
+        // Сортировка и вычисление времени
+        auto start_time = chrono::high_resolution_clock::now();
+        word_array = quick_Sort(word_array);
+        auto end_time = chrono::high_resolution_clock::now();
+        auto search_time = chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
+        //
+
+        input_file.clear();
+        input_file.seekg(0, input_file.beg);
+        cout << "\nВведенный текст:" << endl;
+        while (getline(input_file, output_string)) {
+            cout << output_string << endl;
+        }
+        output_file << "\nВариант 11: латиница, по кол-ву символов в слове, по убыванию, учитывать числа, быстрая сортировка" << endl;
+        output_file << "Количество слов: " << word_amount + 1 << endl;
+        output_file << "Время сортировки " << search_time << " миллисекунд" << endl;
+        output_file << "Статистика (количество слов каждой длины):" << endl;
+        for (int i = 0; i < word_amount_by_length.size(); i++) {
+            output_file << '[' << i + 1 << ']' << " - " << word_amount_by_length[i] << endl;
+        }
+
+        cout << "\nВариант 11: латиница, по кол-ву символов в слове, по убыванию, учитывать числа, быстрая сортировка" << endl;
+        cout << "Количество слов и чисел: " << word_amount + 1 << endl;
+        cout << "Время сортировки: " << search_time << " миллисекунд" << endl;
+        cout << "Статистика (количество слов каждой длины):" << endl;
+        for (int i = 0; i < word_amount_by_length.size(); i++) {
+            cout << '[' << i + 1 << ']' << " - " << word_amount_by_length[i] << endl;
+        }
+        output_file.close();
+        string result_file_name = file_name + " - result.txt";
+        ofstream result_file(result_file_name);
+        result_file << "Отсортированный массив: " << endl;
+        for (int i = 0; i < word_array.size(); i++) {
+            result_file << '[' << i << ']' << " - " << word_array[i] << endl;
+        }
+        result_file.close();
     }
-
     input_file.close();
     cout << "\n\nНажмите ENTER, чтобы закрыть программу...";
     cin.get();

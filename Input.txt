@@ -1,1 +1,0 @@
-I read through a file once to find the number of lines it contains then read through it again so I can store some data of each line in an array. Is there a better way to read through the file twice than closing and opening it again? Here is what I got but am afraid it's inefficient.
