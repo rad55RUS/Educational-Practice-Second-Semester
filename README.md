@@ -1,5 +1,5 @@
 # Educational Practice
-Just C++ program for educational practice.
+Just simple C++ program for educational practice.
 
 It can be used for counting words and sorting them by amount of characters. Examples in txt files.
 
