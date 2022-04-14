@@ -60,12 +60,12 @@ vector<string> quick_Sort(vector<string> array_to_sort)
             if (array_to_sort[i].size() > mid_size) {
                 first_part_size++;
                 first_part.resize(first_part_size);
-                first_part[first_part_size-1] = array_to_sort[i];
+                first_part[first_part_size - 1] = array_to_sort[i];
             }
             else {
                 second_part_size++;
                 second_part.resize(second_part_size);
-                second_part[second_part_size-1] = array_to_sort[i];
+                second_part[second_part_size - 1] = array_to_sort[i];
             }
         }
         //
@@ -82,7 +82,7 @@ vector<string> quick_Sort(vector<string> array_to_sort)
             else {
                 array_to_sort[j] = first_part[0];
                 j++;
-                }
+            }
             if (second_part_size > 1) {
                 second_part = quick_Sort(second_part);
                 int k = 0;
@@ -97,6 +97,86 @@ vector<string> quick_Sort(vector<string> array_to_sort)
     }
     return array_to_sort;
 }
+
+// Составление массива слов с их подсчётом
+vector<string> word_Counting(ifstream& input_file, string output_string, int& word_amount)
+{
+    int word_length = 0, char_amount = 0, t = 0, j = 0;
+    vector<string> word_array(1);
+    bool check_word = false;
+
+    while (getline(input_file, output_string)) {
+        check_word = false;
+        for (int i = 0; i < output_string.size(); i++)
+            if (check_Counted_Symbols(output_string[i])) {
+                check_word = true;
+                break;
+            }
+        if (output_string.size() > 0 && word_amount > 0 && check_word == true && check_Counted_Symbols(output_string[0])) {
+            word_amount++;
+            word_array.resize(word_array.size() + 1);
+        }
+        check_word = false;
+        for (int i = 0; i < output_string.size(); i++) {
+            if (check_word == false && !check_Counted_Symbols(output_string[i])) {
+                check_word = true;
+            }
+            if (check_word == true && check_Counted_Symbols(output_string[i])) {
+                check_word = false;
+                word_array[word_amount].resize(word_length);
+                word_amount++;
+                word_array.resize(word_array.size() + 1);
+                word_length = 0;
+            }
+            if (check_word == false && check_Counted_Symbols(output_string[i])) {
+                word_length++;
+            }
+            char_amount++;
+        }
+        if (output_string.size() > 0) {
+            if (word_length > 0) {
+                word_array[word_amount].resize(word_length);
+            }
+        }
+        check_word = false;
+        for (int i = 0; i < output_string.size(); i++) {
+            if (check_Counted_Symbols(output_string[i])) {
+                check_word = true;
+                word_array[t][j] = output_string[i];
+                j++;
+            }
+            else if (check_word == true) {
+                word_array[t].resize(j);
+                j = 0;
+                t++;
+                check_word = false;
+            }
+        }
+        if (check_word == true)
+            t++;
+        j = 0;
+        word_length = 0;
+    }
+    return word_array;
+}
+//
+
+// Нахождение количества слов каждой длины
+vector<int> each_Length_Words(vector<string> word_array)
+{
+    int max_length = 0;
+    vector<int> word_amount_by_length(0);
+
+    for (int i = 0; i < word_array.size(); i++) {
+        if (word_array[i].size() > max_length) {
+            max_length = word_array[i].size();
+            word_amount_by_length.resize(max_length);
+        }
+        word_amount_by_length[word_array[i].size() - 1]++;
+    }
+    return word_amount_by_length;
+}
+//
 
 // Очистка от пустых элементов
 vector<string> clear_Empty_Elements(vector<string> array_to_clear, int& word_amount)
@@ -128,86 +208,23 @@ void main()
     else {
         vector<string> word_array(1);
         string output_string;
-        int word_amount = 0, word_length = 0, char_amount = 0, j = 0, t = 0, max_word_length = 0;
-        bool check_word = false;
+        int word_amount = 0;
         fs::path file_path(input_file_path);
         string file_name = file_path.stem().string();
-        string output_file_name = file_name + " - analysis.txt";
-        ofstream output_file(output_file_name);
-        vector<int> word_amount_by_length(max_word_length);
+        string analysis_file_name = file_name + " - analysis.txt";
+        ofstream analysis_file(analysis_file_name);
+        vector<int> word_amount_by_length(0);
 
-        output_file << "Введенный текст: " << endl;
-
-        // Составление массива слов
-        while (getline(input_file, output_string)) {
-            check_word = false;
-            for (int i = 0; i < output_string.size(); i++)
-                if (check_Counted_Symbols(output_string[i])) {
-                    check_word = true;
-                    break;
-                }
-            if (output_string.size() > 0 && word_amount > 0 && check_word == true && check_Counted_Symbols(output_string[0])) {
-                word_amount++;
-                word_array.resize(word_array.size() + 1);
-            }
-            check_word = false;
-            output_file << output_string << endl;
-            for (int i = 0; i < output_string.size(); i++) {
-                if (check_word == false && !check_Counted_Symbols(output_string[i])) {
-                    check_word = true;
-                }
-                if (check_word == true && check_Counted_Symbols(output_string[i])) {
-                    check_word = false;
-                    word_array[word_amount].resize(word_length);
-                    word_amount++;
-                    word_array.resize(word_array.size() + 1);
-                    if (word_length > max_word_length) {
-                        max_word_length = word_length;
-                        word_amount_by_length.resize(max_word_length);
-                    }
-                    if (word_length > 0)
-                        word_amount_by_length[word_length - 1]++;
-                    word_length = 0;
-                }
-                if (check_word == false && check_Counted_Symbols(output_string[i])) {
-                    word_length++;
-                }
-                char_amount++;
-            }
-            if (output_string.size() > 0) {
-                if (word_length > max_word_length) {
-                    max_word_length = word_length;
-                    word_amount_by_length.resize(max_word_length);
-                }
-                if (word_length > 0) {
-                    word_amount_by_length[word_length - 1]++;
-                    word_array[word_amount].resize(word_length);
-                }
-            }
-            check_word = false;
-            for (int i = 0; i < output_string.size(); i++) {
-                if (check_Counted_Symbols(output_string[i])) {
-                    check_word = true;
-                    word_array[t][j] = output_string[i];
-                    j++;
-                }
-                else if (check_word == true) {
-                    word_array[t].resize(j);
-                    j = 0;
-                    t++;
-                    check_word = false;
-                }
-            }
-            if (check_word == true)
-                t++;
-            j = 0;
-            word_length = 0;
-        }
-        //
+        // Составление массива слов с их подсчётом. Нахождение количества слов каждой длины
+        word_array = word_Counting(input_file, output_string, word_amount);
 
         // Очистка от пустых элементов
         word_array = clear_Empty_Elements(word_array, word_amount);
         //
+
+        // Нахождение количества слов каждой длины
+        word_amount_by_length = each_Length_Words(word_array);
+        // 
 
         // Сортировка и вычисление времени
         auto start_time = chrono::high_resolution_clock::now();
@@ -216,20 +233,30 @@ void main()
         auto search_time = chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
         //
 
+        // Вывод в analysis
+        input_file.clear();
+        input_file.seekg(0, input_file.beg);
+        analysis_file << "Введенный текст: " << endl;
+        while (getline(input_file, output_string)) {
+            analysis_file << output_string << endl;
+        }
+        analysis_file << "\nВариант 11: латиница, по кол-ву символов в слове, по убыванию, учитывать числа, быстрая сортировка" << endl;
+        analysis_file << "Количество слов: " << word_amount + 1 << endl;
+        analysis_file << "Время сортировки " << search_time << " миллисекунд" << endl;
+        analysis_file << "Статистика (количество слов каждой длины):" << endl;
+        for (int i = 0; i < word_amount_by_length.size(); i++) {
+            analysis_file << '[' << i + 1 << ']' << " - " << word_amount_by_length[i] << endl;
+        }
+        analysis_file.close();
+        //
+
+        // Вывод в консоль
         input_file.clear();
         input_file.seekg(0, input_file.beg);
         cout << "\nВведенный текст:" << endl;
         while (getline(input_file, output_string)) {
             cout << output_string << endl;
         }
-        output_file << "\nВариант 11: латиница, по кол-ву символов в слове, по убыванию, учитывать числа, быстрая сортировка" << endl;
-        output_file << "Количество слов: " << word_amount + 1 << endl;
-        output_file << "Время сортировки " << search_time << " миллисекунд" << endl;
-        output_file << "Статистика (количество слов каждой длины):" << endl;
-        for (int i = 0; i < word_amount_by_length.size(); i++) {
-            output_file << '[' << i + 1 << ']' << " - " << word_amount_by_length[i] << endl;
-        }
-
         cout << "\nВариант 11: латиница, по кол-ву символов в слове, по убыванию, учитывать числа, быстрая сортировка" << endl;
         cout << "Количество слов и чисел: " << word_amount + 1 << endl;
         cout << "Время сортировки: " << search_time << " миллисекунд" << endl;
@@ -237,7 +264,6 @@ void main()
         for (int i = 0; i < word_amount_by_length.size(); i++) {
             cout << '[' << i + 1 << ']' << " - " << word_amount_by_length[i] << endl;
         }
-        output_file.close();
         string result_file_name = file_name + " - result.txt";
         ofstream result_file(result_file_name);
         result_file << "Отсортированный массив: " << endl;
