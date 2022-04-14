@@ -101,7 +101,7 @@ vector<string> quick_Sort(vector<string> array_to_sort)
 // Составление массива слов с их подсчётом
 vector<string> word_Counting(ifstream& input_file, string output_string, int& word_amount)
 {
-    int word_length = 0, char_amount = 0, t = 0, j = 0;
+    int word_length = 0, t = 0, j = 0;
     vector<string> word_array(1);
     bool check_word = false;
 
@@ -131,7 +131,6 @@ vector<string> word_Counting(ifstream& input_file, string output_string, int& wo
             if (check_word == false && check_Counted_Symbols(output_string[i])) {
                 word_length++;
             }
-            char_amount++;
         }
         if (output_string.size() > 0) {
             if (word_length > 0) {
