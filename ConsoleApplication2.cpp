@@ -215,7 +215,7 @@ void main()
         ofstream analysis_file(analysis_file_name);
         vector<int> word_amount_by_length(0);
 
-        // Составление массива слов с их подсчётом. Нахождение количества слов каждой длины
+        // Составление массива слов с их подсчётом.
         word_array = word_Counting(input_file, output_string, word_amount);
 
         // Очистка от пустых элементов
