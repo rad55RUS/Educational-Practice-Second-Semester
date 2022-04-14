@@ -1,7 +1,7 @@
 # Educational Practice
-Just simple C++ program for educational practice.
+Just simple C++ program for educational practice. All output data in russian language.
 
-It can be used for count words and sort them by amount of characters. Examples of sort in result files.
+It can be used for count words from input text and sort them by amount of characters. Result files contain sorted word array, and analysis - time of sort and amount of words of each size.
 
 In this project was used quick sort that uses mid size of word in array as reference number. Code below.
 
@@ -69,10 +69,8 @@ vector<string> quick_Sort(vector<string> array_to_sort)
 }
 ```
 
-Considering that the quick sort is performed on average in linearithmic time, tests of this algorithm showed very good results that you can see in this graph below.
+Considering that the quick sort is performed on average in linearithmic time, tests of this algorithm on 10 different texts showed very good results that you can see in this graph below. It is based on data from analysis files.
 
 ![2022-04-13_11-36-03](https://user-images.githubusercontent.com/103406111/163135526-e3b89a46-8d98-4bb0-896f-bce3feb43f36.png)
 
 This graph shows that time complexity of sort in this program is almost linear. Linear quick sort time is the best possible.
-
-Don't know what else to write.
